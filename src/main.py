@@ -1,14 +1,16 @@
 import schedule
 import time
-from alerts import generate_alerts
+from alerts import monitor_price, monitor_initial_price
 
 def job():
-    generate_alerts('bitcoin')
+    monitor_price()
 
-# Configura el trabajo para que se ejecute cada 10 minutos
-schedule.every(10).minutes.do(job)
+# Configura el trabajo para que se ejecute cada 30 minutos
+schedule.every(30).minutes.do(job)
 
 if __name__ == "__main__":
+    monitor_initial_price()  # Monitorear el precio inicial al iniciar
     while True:
         schedule.run_pending()
         time.sleep(1)
+
