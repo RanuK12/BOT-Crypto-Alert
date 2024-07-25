@@ -10,6 +10,3 @@ def send_whatsapp_message(body):
         to=WHATSAPP_TO
     )
     return message.sid
-
-if __name__ == "__main__":
-    print(send_whatsapp_message('Hello from your crypto bot!'))
