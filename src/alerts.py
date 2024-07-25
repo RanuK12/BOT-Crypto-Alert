@@ -1,30 +1,45 @@
+from datetime import datetime, timedelta
 from crypto_api import get_crypto_price
 from whatsapp_api import send_whatsapp_message
 
 INITIAL_PRICE = None
-THRESHOLDS = [1, 2, 3]  # Umbrales en porcentaje
+PRICE_LOG = []  # Lista para mantener un registro de precios con tiempo
 
-def set_initial_price(crypto_id):
-    global INITIAL_PRICE
-    INITIAL_PRICE = get_crypto_price(crypto_id)
-    print(f"Initial price set to {INITIAL_PRICE}")
+def log_price(price):
+    # Registrar el precio actual con el tiempo
+    now = datetime.now()
+    PRICE_LOG.append((now, price))
 
 def calculate_percentage_change(current_price, initial_price):
     return ((current_price - initial_price) / initial_price) * 100
 
-def generate_alerts(crypto_id):
-    global INITIAL_PRICE
-    if INITIAL_PRICE is None:
-        set_initial_price(crypto_id)
-    
-    current_price = get_crypto_price(crypto_id)
-    change_percentage = calculate_percentage_change(current_price, INITIAL_PRICE)
-    
-    for threshold in THRESHOLDS:
-        if change_percentage <= -threshold:
-            send_whatsapp_message(f"Alerta de Compra: {crypto_id} ha bajado un {abs(change_percentage):.2f}% y ahora está en {current_price} USD")
-        elif change_percentage >= threshold:
-            send_whatsapp_message(f"Alerta de Venta: {crypto_id} ha subido un {change_percentage:.2f}% y ahora está en {current_price} USD")
+def generate_alert(price, message):
+    send_whatsapp_message(f"Alerta: {message}, Precio: {price}")
 
-if __name__ == "__main__":
-    generate_alerts('bitcoin')
+def monitor_price():
+    global INITIAL_PRICE
+    current_price = get_crypto_price()
+    log_price(current_price)
+    
+    if INITIAL_PRICE is None:
+        INITIAL_PRICE = current_price
+    
+    # Calcular cambios porcentuales para alertas
+    half_hour_ago = datetime.now() - timedelta(minutes=30)
+    prices_half_hour_ago = [price for time, price in PRICE_LOG if time >= half_hour_ago]
+    
+    if prices_half_hour_ago:
+        initial_price_half_hour = prices_half_hour_ago[0]
+        percentage_change = calculate_percentage_change(current_price, initial_price_half_hour)
+        
+        if percentage_change <= -0.5:
+            generate_alert(current_price, "Baja más del 0.5% en media hora. Considera vender")
+        elif percentage_change >= 0.5:
+            generate_alert(current_price, "Subida más del 0.5% en media hora. Considera comprar")
+
+def monitor_initial_price():
+    global INITIAL_PRICE
+    current_price = get_crypto_price()
+    if INITIAL_PRICE is None:
+        INITIAL_PRICE = current_price
+
