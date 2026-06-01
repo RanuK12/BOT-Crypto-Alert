@@ -95,3 +95,8 @@ Este comportamiento es importante para ayudar al usuario a tomar decisiones info
 4- Automatización:
 El sistema revisa los precios cada 30 minutos y genera alertas automáticamente basado en cambios porcentuales.
 Esto asegura que el usuario reciba notificaciones oportunas y relevantes.
+
+
+## Licencia
+
+MIT — © 2026 Ranuk IT Solutions | [ranuk.dev](https://ranuk.dev)
